@@ -54,7 +54,9 @@ class AssistantMessage(BaseModel):
                         args = json.loads(args)
                     except json.JSONDecodeError:
                         args = {}
-                tool_calls.append(ToolCall(id=tc.id, name=tc.function.name, arguments=args))
+                tool_calls.append(
+                    ToolCall(id=tc.id, name=tc.function.name, arguments=args)
+                )
 
         return cls(
             role=raw_message.role,
@@ -109,13 +111,24 @@ class InferenceClient:
         self.llm_model = groq_model
         self.embedding_model = embedding_model_name
 
-        # Groq client (chat + generation)
         self._groq = Groq(api_key=groq_api_key)
 
-        # HuggingFace sentence-transformers (embeddings, loaded once)
-        print(f"[inference] Loading embedding model: {embedding_model_name} ...")
-        self._st_model = SentenceTransformer(embedding_model_name, device=device)
-        print(f"[inference] Embedding model ready.")
+        self._embedding_model_name = embedding_model_name
+        self._device = device
+        self._st_model: SentenceTransformer | None = None
+
+    def _get_st_model(self) -> SentenceTransformer:
+        if self._st_model is None:
+            print(
+                f"[inference] Loading embedding model: {self._embedding_model_name} ..."
+            )
+            self._st_model = SentenceTransformer(
+                self._embedding_model_name,
+                device=self._device,
+            )
+            print("[inference] Embedding model ready.")
+
+        return self._st_model
 
     @classmethod
     def from_config(
@@ -136,12 +149,12 @@ class InferenceClient:
 
     def embed(self, text: str) -> list[float]:
         """Embed a single string."""
-        vector = self._st_model.encode(text, convert_to_numpy=True)
+        vector = self._get_st_model().encode(text, convert_to_numpy=True)
         return vector.tolist()
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a list of strings (batched for efficiency)."""
-        vectors = self._st_model.encode(
+        vectors = self._get_st_model().encode(
             texts,
             batch_size=32,
             show_progress_bar=True,
@@ -277,4 +290,3 @@ class InferenceClient:
             return True
         except Exception:
             return False
-
