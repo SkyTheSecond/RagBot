@@ -21,12 +21,8 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen
 
-# Pre-download the embedding model during build
-
-RUN .venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
-
 # Copy application source
 
 COPY . .
 
-CMD sh -c '.venv/bin/python -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-10000}'
+CMD sh -c '.venv/bin/python -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-10000} --log-level debug'
