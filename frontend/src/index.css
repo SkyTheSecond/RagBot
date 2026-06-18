@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #f5f2eb;
+  color: #0e0e0e;
+  font-family: 'DM Sans', sans-serif;
+}
+
+::selection {
+  background: #d4622a;
+  color: #f5f2eb;
+}
+
+::-webkit-scrollbar        { width: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #c8c4bc; border-radius: 2px; }
